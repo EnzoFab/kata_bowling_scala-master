@@ -13,7 +13,7 @@ case class Frame(attempt1: Int, attempt2: Int = 0){
     */
   def isSpare: Boolean = !isStrike && attempt1 + attempt2 == 10
 
-  def sum: Int = attempt1 + attempt2
+  def score: Int = attempt1 + attempt2
 
   def getLastAttempt: Int = {
     if (isStrike) attempt1

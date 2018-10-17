@@ -23,39 +23,42 @@ case class Player(name: String = "No Name", frames: List[Frame] = Nil) {
         else listFrames.head.isSpare
     }
 
-    def totalScore: Int = { // TODO
+    /**
+    *
+    * @return
+    */
+    def totalScore: Int = {
 
-        def totalScoreInt(frames: List[Frame]): Int = {
-            if(frames.isEmpty) 0
-            else {
-                if (lastIsStrike(frames.tail)) {
-                    frameValueStrike(frames) + totalScoreInt(frames.tail)
-                }
-                else if (lastIsSpare(frames)) {
-                    // spare:
-                    // the first of the attemp1 + the score of the frame + the score of previous frame
-                    frames.head.sum + frames.head.attempt1 + totalScoreInt(frames.tail)
-                }
-                frames.head.sum + totalScoreInt(frames.tail)
-            }
-        }
-
-        totalScoreInt(frames)
-    }
-
-    private def frameValueStrike (listFrames: List[Frame]): Int = {
-        if (listFrames.isEmpty) 0
+      def totalScoreInt(frames: List[Frame]): Int = {
+        if(frames.isEmpty) 0
         else {
-            if (listFrames.head.isStrike) {
-                listFrames.head.attempt1 + frameValueStrike(listFrames.tail)
+          if (frames.head.isStrike) { // a strike
+            // we add the score of the current frame + the score of the next one
+            // if the next one is also a strike:
+            //  add the score of the strike + the score of the first attempt of the next frame
+            var score = frames.head.score
+            if (frames.tail.nonEmpty) {
+              // if there is a frame after this frame and this frame is a strike
+              score = score + frames.tail.head.score
+              val tail = frames.tail
+              if (tail.tail.nonEmpty  && tail.head.isStrike) // the next frame is also a strike
+                score = score + tail.tail.head.attempt1
             }
-            else {
-                listFrames.head.sum + frameValueStrike(listFrames.tail)
-            }
+            score + totalScoreInt(frames.tail)
+          }
+          else if (frames.head.isSpare) { // the current frame is a spare
+              // we add the score of the current frame + the score of the first attempt of next frame if it exists
+            var score = frames.head.score
+            if (frames.tail.nonEmpty) score = score + frames.tail.head.attempt1
+            score + totalScoreInt(frames.tail)
+          } else frames.head.score + totalScoreInt(frames.tail)
         }
+      }
+
+      totalScoreInt(frames)
     }
 
 
-    override def toString = s"$name score: $totalScore" 
+  override def toString = s"$name score: $totalScore"
 
 }
